@@ -3,11 +3,20 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 )
 
 type Page struct {
 	Title string
 	Body  []byte
+}
+
+// Fprintf formats according to a format specifier and writes to w.
+// It returns the number of bytes written and any write error encountered.
+func viewHandler(w http.ResponseWriter, req *http.Request) {
+	title := req.URL.Path[len("/view/"):]
+	p, _ := load(title)
+	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
 
 func (p *Page) save() error {
@@ -25,8 +34,6 @@ func load(title string) (*Page, error) {
 }
 
 func main() {
-	p1 := &Page{Title: "test", Body: []byte("Hello world")}
-	p1.save()
-	p2, _ := load("test")
-	fmt.Println(string(p2.Body))
+	http.HandleFunc("/view/", viewHandler)
+	http.ListenAndServe(":8080", nil)
 }
