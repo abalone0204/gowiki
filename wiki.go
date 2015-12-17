@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 )
@@ -15,21 +15,25 @@ type Page struct {
 // It returns the number of bytes written and any write error encountered.
 func viewHandler(w http.ResponseWriter, req *http.Request) {
 	title := req.URL.Path[len("/view/"):]
-	p, _ := load(title)
-	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
+	p, err := load(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	renderTemplate(w, "view.html", p)
 }
+
 func editHandler(w http.ResponseWriter, req *http.Request) {
 	title := req.URL.Path[len("/edit/"):]
 	p, err := load(title)
 	if err != nil {
 		p = &Page{Title: title}
 	}
-	fmt.Fprintf(w, "<h1>Editing %s</h1>"+
-		"<form action=\"/save/%s\" method=\"POST\">"+
-		"<textarea name=\"body\">%s</textarea><br>"+
-		"<input type=\"submit\" value=\"Save\">"+
-		"</form>",
-		p.Title, p.Title, p.Body)
+	renderTemplate(w, "edit.html", p)
+}
+
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+	t, _ := template.ParseFiles(tmpl)
+	t.Execute(w, p)
 }
 
 // Page
@@ -48,7 +52,7 @@ func load(title string) (*Page, error) {
 }
 
 func main() {
-	http.HandleFunc("/save/", saveHandler)
+	// http.HandleFunc("/save/", saveHandler)
 	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/view/", viewHandler)
 	http.ListenAndServe(":8080", nil)
