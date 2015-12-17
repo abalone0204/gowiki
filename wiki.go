@@ -17,7 +17,8 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 	title := req.URL.Path[len("/view/"):]
 	p, err := load(title)
 	if err != nil {
-		p = &Page{Title: title}
+		http.Redirect(w, req, "/edit/"+title, http.StatusFound)
+		return
 	}
 	renderTemplate(w, "view.html", p)
 }

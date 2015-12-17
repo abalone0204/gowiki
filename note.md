@@ -67,3 +67,29 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 注意到這裏兩邊會出現重複的 code，
 
 可將重複的部分抽出
+
+## Handle the non-existing page
+
+如果 /view/nonexist，
+
+還是會跑到 view 頁面，
+
+但實際上這個 page並沒有被存下來。
+
+應該要將它導到 /edit/nonexist，
+
+創造一個屬於他的頁面才對。
+
+```go
+func viewHandler(w http.ResponseWriter, req *http.Request) {
+    title := req.URL.Path[len("/view/"):]
+    p, err := load(title)
+    if err != nil {
+        http.Redirect(w, req, "/edit/"+title, http.StatusFound)
+        return
+    }
+    renderTemplate(w, "view.html", p)
+}
+```
+
+這裏需要改寫 viewHanlder，加入http.Redirect
