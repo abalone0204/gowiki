@@ -93,3 +93,15 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 ```
 
 這裏需要改寫 viewHanlder，加入http.Redirect
+
+## Saving page
+
+```go
+func saveHandler(w http.ResponseWriter, req *http.Request) {
+    title := req.URL.Path[len("/save/"):]
+    body := req.FormValue("body")
+    p := &Page{Title: title, Body: []byte(body)}
+    p.save()
+    http.Redirect(w, req, "/view/"+title, http.StatusFound)
+}
+```
