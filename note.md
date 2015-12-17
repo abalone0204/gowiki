@@ -105,3 +105,33 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
     http.Redirect(w, req, "/view/"+title, http.StatusFound)
 }
 ```
+
+body 是從 edit.html 裡面的 form 去拿的。
+
+## Error Handling
+
+前面的例子大部份省略錯誤處理
+
+但實際上我們並不希望錯誤發生的時候卻什麼也不知道
+
+而且這樣程式也會相當不 robust
+
+讓我們按照 golang 中的習慣寫法來改寫`renderTemplate`
+
+```go
+func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+    t, err := template.ParseFiles(tmpl)
+    if err != nil {
+        // the error msg should be plain text
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
+    err = t.Execute(w, p)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
+}
+```
+
+http.Error會幫我們處理。
+> 查完文件後
+> 第二個參數一定要放 plain text，第三個則是http package中的constant: 500
