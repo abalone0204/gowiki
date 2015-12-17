@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 )
 
 type Page struct {
@@ -12,11 +14,24 @@ type Page struct {
 }
 
 var templates = template.Must(template.ParseFiles("view.html", "edit.html"))
+var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
+
+func getTitle(w http.ResponseWriter, req *http.Request) (string, error) {
+	m := validPath.FindStringSubmatch(req.URL.Path)
+	if m == nil {
+		http.NotFound(w, req)
+		return "", errors.New("Invalid Page Title")
+	}
+	return m[2], nil
+}
 
 // Fprintf formats according to a format specifier and writes to w.
 // It returns the number of bytes written and any write error encountered.
 func viewHandler(w http.ResponseWriter, req *http.Request) {
-	title := req.URL.Path[len("/view/"):]
+	title, err := getTitle(w, req)
+	if err != nil {
+		return
+	}
 	p, err := load(title)
 	if err != nil {
 		http.Redirect(w, req, "/edit/"+title, http.StatusFound)
@@ -26,7 +41,7 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func editHandler(w http.ResponseWriter, req *http.Request) {
-	title := req.URL.Path[len("/edit/"):]
+	title, err := getTitle(w, req)
 	p, err := load(title)
 	if err != nil {
 		p = &Page{Title: title}
@@ -35,10 +50,10 @@ func editHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func saveHandler(w http.ResponseWriter, req *http.Request) {
-	title := req.URL.Path[len("/save/"):]
+	title, err := getTitle(w, req)
 	body := req.FormValue("body")
 	p := &Page{Title: title, Body: []byte(body)}
-	err := p.save()
+	err = p.save()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

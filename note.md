@@ -149,5 +149,9 @@ http.Error會幫我們處理。
 > 實作方法就是我們拿到 *Template以後，再用[ExecuteTemplate](https://golang.org/pkg/html/template/#Template.ExecuteTemplate)來 render
 
 
+##Validation
+
+MustCompile is distinct from Compile in that it will panic if the expression compilation fails, while Compile returns an error as a second parameter.
+
 
 
