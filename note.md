@@ -135,3 +135,19 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 http.Error會幫我們處理。
 > 查完文件後
 > 第二個參數一定要放 plain text，第三個則是http package中的constant: 500
+
+##Template Cacheing
+
+前面每次 render template時的會重新 parse一次
+
+這樣做其實是沒有效率的
+
+最好是能只parse一次，接著有需要被用到時
+
+就從parse過的 templates 中挑要的那個就行了（呼叫的是*Template）
+
+> 實作方法就是我們拿到 *Template以後，再用[ExecuteTemplate](https://golang.org/pkg/html/template/#Template.ExecuteTemplate)來 render
+
+
+
+

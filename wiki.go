@@ -11,6 +11,8 @@ type Page struct {
 	Body  []byte
 }
 
+var templates = template.Must(template.ParseFiles("view.html", "edit.html"))
+
 // Fprintf formats according to a format specifier and writes to w.
 // It returns the number of bytes written and any write error encountered.
 func viewHandler(w http.ResponseWriter, req *http.Request) {
@@ -45,12 +47,7 @@ func saveHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
-	t, err := template.ParseFiles(tmpl)
-	if err != nil {
-		// the error msg should be plain text
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	err = t.Execute(w, p)
+	err := templates.ExecuteTemplate(w, tmpl, p)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
