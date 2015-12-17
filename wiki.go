@@ -18,7 +18,21 @@ func viewHandler(w http.ResponseWriter, req *http.Request) {
 	p, _ := load(title)
 	fmt.Fprintf(w, "<h1>%s</h1><div>%s</div>", p.Title, p.Body)
 }
+func editHandler(w http.ResponseWriter, req *http.Request) {
+	title := req.URL.Path[len("/edit/"):]
+	p, err := load(title)
+	if err != nil {
+		p = &Page{Title: title}
+	}
+	fmt.Fprintf(w, "<h1>Editing %s</h1>"+
+		"<form action=\"/save/%s\" method=\"POST\">"+
+		"<textarea name=\"body\">%s</textarea><br>"+
+		"<input type=\"submit\" value=\"Save\">"+
+		"</form>",
+		p.Title, p.Title, p.Body)
+}
 
+// Page
 func (p *Page) save() error {
 	filename := p.Title + ".txt"
 	return ioutil.WriteFile(filename, p.Body, 0600)
@@ -34,6 +48,8 @@ func load(title string) (*Page, error) {
 }
 
 func main() {
+	http.HandleFunc("/save/", saveHandler)
+	http.HandleFunc("/edit/", editHandler)
 	http.HandleFunc("/view/", viewHandler)
 	http.ListenAndServe(":8080", nil)
 }
