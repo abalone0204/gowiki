@@ -151,7 +151,15 @@ http.Error會幫我們處理。
 
 ##Validation
 
-MustCompile is distinct from Compile in that it will panic if the expression compilation fails, while Compile returns an error as a second parameter.
+`MustCompile` is distinct from Compile in that it will panic if the expression compilation fails, while Compile returns an error as a second parameter.
 
+##Introducing function literals and closures
 
+viewHandler, saveHandler, editHandler
+
+三個function裡面的 validation 以及 error handling 做的事情都差不多
+
+所以我們可以借助 golang 中 fucntion literal 的特性來 refactor
+
+> func 中不能宣告 func，但可以使用匿名函數、或返回匿名函數
 
